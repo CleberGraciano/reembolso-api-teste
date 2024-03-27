@@ -2,7 +2,7 @@ version: '2.0'
 
 services:
   mongodb:
-    image: mongo:4.4.6
+    image: mongo
     container_name: mongodb
     ports:
       - "27017:27017"
@@ -25,6 +25,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      SPRING_APPLICATION_JSON: '{
+              "spring.data.mongodb.host" : "mongodb",
+              "spring.data.mongodb.port" : "27017",
+              "spring.data.mongodb.database" : "admin"
+            }'
     depends_on:
       - mongodb
 
