@@ -41,7 +41,7 @@ public class ReembolsoServiceImpl implements ReembolsoService {
     private static final Logger logger = LoggerFactory.getLogger(ReembolsoServiceImpl.class);
 
     private int DIA_INICIO = 1;
-    private int DIA_FIM = 28;
+    private int DIA_FIM = 20;
 
 
     @Autowired
