@@ -1,68 +1,32 @@
-version: "3.5"
+version: '2.0'
 
 services:
-  app:
-    depends_on:
-      - mongo
-    build: .
-    restart: unless-stopped
-    env_file: .env
+  mongodb:
+    image: mongo
+    container_name: mongodb
     ports:
-      - $SPRING_LOCAL_PORT:$SPRING_DOCKER_PORT
-    environment:
-      SPRING_APPLICATION_JSON: '{
-            "spring.data.mongodb.host" : "localhost",
-            "spring.data.mongodb.port" : "$MONGODB_DOCKER_PORT",
-            "spring.data.mongodb.database" : "$MONGODB_DATABASE",
-            "spring.data.mongodb.username" : "$MONGODB_USER",
-            "spring.data.mongodb.password" : "$MONGODB_PASSWORD"
-          }'
+      - "27017:27017"
     volumes:
-      - .m2:/root/.m2
-    stdin_open: true
-    tty: true
-  mongo:
-    image: mongo:latest
-    container_name: mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
-    ports:
-      - $MONGODB_DOCKER_PORT:$MONGODB_DOCKER_PORT
-    networks:
-      - MONGO
-    volumes:
-      - db:/data/db
-  mongo-express:
-    image: mongo-express:latest
-    container_name: mongo-express
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
-      ME_CONFIG_MONGODB_SERVER: mongo
-      ME_CONFIG_MONGODB_PORT: "27017"
-    ports:
-      - "0.0.0.0:8081:8081"
-    networks:
-      - MONGO
-    depends_on:
-      - mongo
-    volumes:
-      - type: bind
-        source: ./wait-for.sh
-        target: /wait-for.sh
-    entrypoint:
-      - /bin/sh
-      - /wait-for.sh
-      - mongo:27017
-      - --
-      - tini
-      - --
-      - /docker-entrypoint.sh
+      - mongodb_data:/data/db
 
-networks:
-  MONGO:
-    name: MONGO
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_BASICAUTH_USERNAME: user
+      ME_CONFIG_BASICAUTH_PASSWORD: password
+
+  spring-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
 
 volumes:
-  db:
+  mongodb_data:
